@@ -8,6 +8,8 @@ from app_manager import AppManager
 
 
 if __name__ == "__main__":
-    ctk.set_appearance_mode("System")  # Appearance mode
-    ctk.set_default_color_theme("blue")  # Default color theme
+    ctk.set_appearance_mode("dark")  # Appearance mode
+    ctk.set_default_color_theme("dark-blue")  # Default color theme
+    # ctk.set_widget_scaling(.5)
+    # ctk.set_window_scaling(.5)
     app_manager = AppManager()

@@ -18,8 +18,8 @@ class AppManager:
             self.login_client.deiconify()
             self.login_client.initFields()
         self.login_client.lift()
+        self.login_client.title = "Meoow connection"
         self.login_client.mainloop()
-        # self.login_client.focus_force()
 
     def show_chat(self, user_id: int):
         self.login_client.withdraw()
