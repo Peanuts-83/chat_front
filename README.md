@@ -2,7 +2,8 @@
 
 **CustomTkinter** est un framework basé sur **Tkinter**, qui permet de créer des interfaces graphiques modernes et stylisées en utilisant des composants personnalisés (widgets). Il ajoute des fonctionnalités telles que les thèmes sombres et clairs, ainsi qu'un style plus moderne pour les applications de bureau.
 
-Voici comment vous pouvez adapter l'application de chat précédente pour utiliser **CustomTkinter** à la place de **PyQt5** :
+sites de référence:
+* [customtkinter](https://customtkinter.tomschimansky.com/documentation/widgets/textbox)
 
 ## Installer CustomTkinter
 Installez `customtkinter` :

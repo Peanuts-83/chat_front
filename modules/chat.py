@@ -1,17 +1,15 @@
 # For relative imports to work in Python 3.6
-from cProfile import label
 import os, sys
-from turtle import width
 sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 import json
 import threading
 import customtkinter as ctk
 import websocket
+from PIL import Image
 
-
-class ChatClient(ctk.CTk):
-    def __init__(self, manager, user_id) -> None:
-        super().__init__()
+class ChatClient(ctk.CTkToplevel):
+    def __init__(self, manager, master, user_id) -> None:
+        super().__init__(master)
         self.manager = manager
         self.user_id= user_id
 
@@ -25,13 +23,25 @@ class ChatClient(ctk.CTk):
         self.grid_rowconfigure(1, weight=1)
 
         # layout
+        #  leftFrame
+        self.leftFrame = ctk.CTkFrame(self, width=80, fg_color="transparent")
+        self.leftFrame.grid(row=0, column=0, sticky="enws", padx=0, pady=0)
+        self.leftFrame.rowconfigure(0, weight=1)
+        self.leftFrame.rowconfigure(1, weight=10)
+        self.leftFrame.columnconfigure(0, weight=1)
+        self.leftFrame.columnconfigure(1, weight=1)
+        # settings
+        self.settings_btn = ctk.CTkButton(self.leftFrame, text="Settings", command=self.open_settings)
+        self.settings_btn.grid(row=1, column=0, sticky="nw", padx=(10,5), pady=0)
+        self.mode_btn = ctk.CTkSwitch(self.leftFrame, text="Mode", command=self.switch_mode)
+        self.mode_btn.grid(row=1, column=1, sticky="ne", padx=(5,10), pady=0)
         # users
-        self.users = ['toto','titi','tata','tutu','pipo']
-        self.tabFrame = ctk.CTkScrollableFrame(self, width=80)
-        self.tabFrame.grid(row=0, column=0, sticky="enws", padx=0, pady=10)
+        self.users = ['General','titi','tata','tutu','pipo']
+        self.userTabFrame = ctk.CTkScrollableFrame(self.leftFrame, width=80)
+        self.userTabFrame.grid(row=0, column=0, columnspan=2, sticky="esw", padx=0, pady=10)
         self.user_btns = {}
         for user in self.users:
-            btn = ctk.CTkButton(self.tabFrame, text=user, command=lambda u=user: self.select_user(u) )
+            btn = ctk.CTkButton(self.userTabFrame, text=user, command=lambda u=user: self.select_user(u) )
             btn.pack(fill='x', padx=0, pady=1)
             self.user_btns[user] = btn
         # chat > readonly = {state: "disabled"} / readwrite = {state: "normal"}
@@ -44,9 +54,12 @@ class ChatClient(ctk.CTk):
         self.send_button = ctk.CTkButton(self, text="Send", command=self.send_message)
         self.send_button.grid(row=1, column=2, sticky='esw', padx=(5,10), pady=(0,10))
 
+        # all layout elements
+        self.layout_elements = [self.leftFrame, self.settings_btn, self.mode_btn, self.userTabFrame, list(self.user_btns.values()), self.chat_display, self.input_field, self.send_button]
+
         # events
-        self.input_field.bind("<Return>", lambda event: self.send_message())
-        self.protocol("WM_DELETE_WINDOW", self.on_close)
+        self.input_field.bind("<Return>", lambda event: self.send_message()) # Return KEY
+        self.protocol("WM_DELETE_WINDOW", self.on_close) # close window
         self.bind("<Configure>", self.on_resize) # resize et calcul des rows/cols
 
         ## connexion
@@ -57,17 +70,52 @@ class ChatClient(ctk.CTk):
         self.receive_thread = threading.Thread(target=self.receive_message, daemon=True)
         self.receive_thread.start()
 
-
-    # @sio.event
-    def connect_server(self):
-        self.websocket = websocket.create_connection(f"ws://127.0.0.1:8000/ws/chat/{self.user_id}")
-
+    # USER interraction #
     def select_user(self, user):
         self.current_user = user
+
+    def open_settings(self):
+        print('open settings')
+
+    # def switch_mode(self):
+    #     """
+    #     toggle light/dark modes - wip
+    #     """
+    #     dark = self.mode_btn.get()
+    #     if dark == 1:
+    #         self._set_appearance_mode("dark")
+    #     else:
+    #         self._set_appearance_mode("light")
+    #     self.update_widgets(self)
+
+    # def update_widgets(self, widget):
+    #     """
+    #     update each UI item
+    #     """
+    #     for el in widget.winfo_children():
+    #         if isinstance(el, ctk.CTkBaseClass):
+    #             try:
+    #                 el.configure(**el.configure())
+    #             except:
+    #                 el.configure()
+    #             finally:
+    #                 el.update()
+    #         self.update_widgets(el)
+    #         for subel in el.winfo_children():
+    #             try:
+    #                 subel.configure(**subel.configure())
+    #             except:
+    #                 subel.configure()
+    #             finally:
+    #                 subel.update()
 
     def on_resize(self, event):
         new_height = int(self.winfo_height())
         self.chat_display.configure(height=new_height - 60)
+
+    # CHAT communication #
+    def connect_server(self):
+        self.websocket = websocket.create_connection(f"ws://127.0.0.1:8000/ws/chat/{self.user_id}")
 
     def receive_message(self) -> None:
         while self.websocket is not None:

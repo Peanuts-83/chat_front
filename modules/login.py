@@ -1,6 +1,5 @@
 # For relative imports to work in Python 3.6
 import os, sys
-
 sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 import json
 import customtkinter as ctk
@@ -13,7 +12,7 @@ class LoginClient(ctk.CTk):
         super().__init__()
         self.manager = manager
 
-        self.title = "Meoow connection"
+        self.title("Meoow connection")
         self.geometry("400x300")
 
         self.label_username = ctk.CTkLabel(self, text="User")
@@ -26,6 +25,7 @@ class LoginClient(ctk.CTk):
 
         self.label_password = ctk.CTkLabel(self, text="Password")
         self.label_password.pack(pady=5)
+        self.label_password.bind("<Return>", self.login)
 
         self.entry_password = ctk.CTkEntry(self, show="*")
         self.entry_password.pack(pady=5)
